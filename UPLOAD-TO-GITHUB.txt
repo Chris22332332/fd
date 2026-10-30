@@ -1,0 +1,32 @@
+IMPORTANT: UPLOAD THESE FILES TO THE ROOT OF YOUR EXISTING GITHUB REPOSITORY
+
+This ZIP has NO enclosing project folder. When extracted, package.json and
+server.js should be directly visible.
+
+1. Open the existing repository connected to Render: Chris22332332/ok.
+2. Use Add file -> Upload files.
+3. Open the extracted folder and select ALL items INSIDE it (including the
+   public and scripts folders, hidden .node-version and .gitignore files).
+4. Drag those selected items into the GitHub upload area at the repository root.
+   Do NOT drag the portal-v6-flat folder itself, and do NOT upload a nested
+   portal-browser-ui-v6 folder.
+5. Confirm that public/index.html, public/sw.js, server.js and package.json
+   are being added/replaced at the root structure shown below.
+6. Commit to the main branch.
+7. Render -> netttooo -> Manual Deploy -> Deploy latest commit.
+
+Expected repository layout:
+  package.json
+  server.js
+  render.yaml
+  .node-version
+  public/index.html
+  public/sw.js
+  scripts/check.mjs
+
+Keep Render build command `npm install` and start command `npm start`.
+No environment variables are required by this project as packaged.
+
+After deployment, the homepage source should contain build marker
+portal-20261030-6. The old repository source had portal-20261030-3, which is
+not the upgraded version.

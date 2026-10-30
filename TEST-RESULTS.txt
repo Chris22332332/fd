@@ -1,0 +1,22 @@
+PORTAL BROWSER UI UPGRADE V6 — TEST RESULTS
+===========================================
+
+Local static test suite:
+- package metadata and deployment config
+- server and service worker build identifiers
+- required frontend UI elements
+- removal of static recommended/quick-link tiles
+- user-created bookmarks and recent-page controls
+- settings panel sections and interactive controls
+- keyboard shortcuts
+- search-engine selection and URL handling
+- transport compatibility settings and diagnostic controls
+- service-worker and Scramjet assets referenced by the UI
+- inline JavaScript syntax
+- service-worker JavaScript syntax
+- server JavaScript syntax
+- ZIP archive integrity
+
+These checks are structural/syntax checks only. The app's complete proxy runtime
+and live access to third-party websites must still be tested after dependencies
+are installed and the new deployment is running.

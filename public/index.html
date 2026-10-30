@@ -1,0 +1,552 @@
+<!doctype html>
+<html lang="en" data-accent="aurora">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#100b20">
+<title>Portal — Your browser workspace</title>
+<style>
+:root{
+  color-scheme:dark;
+  --bg:#0d0919;--bg-2:#120d24;--panel:#17112b;--panel-2:#1e1738;--panel-3:#261d45;
+  --line:rgba(190,164,255,.15);--line-strong:rgba(190,164,255,.27);
+  --text:#f5efff;--muted:#a99cbe;--soft:#756889;
+  --accent:#b68aff;--accent-2:#7c5cff;--accent-3:#e5a7ff;--good:#70e2bb;--warn:#ffd38a;--bad:#ff8caa;
+  --shadow:0 24px 80px rgba(0,0,0,.38);--radius:18px;
+  --font:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+}
+html[data-accent="nebula"]{--accent:#a98cff;--accent-2:#6548df;--accent-3:#d5b6ff;--panel:#15112b;--panel-2:#1c1740}
+html[data-accent="plum"]{--accent:#d38aff;--accent-2:#984ee0;--accent-3:#f0b0e8;--panel:#211026;--panel-2:#2b1737}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{font-family:var(--font);color:var(--text);background:radial-gradient(ellipse at 16% -10%,rgba(124,92,255,.20),transparent 36%),radial-gradient(ellipse at 92% 4%,rgba(215,116,255,.13),transparent 28%),var(--bg);display:flex;flex-direction:column;overflow:hidden;min-width:320px}
+button,input,select{font:inherit}button{color:inherit}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+button{border:0;cursor:pointer}
+.icon{width:18px;height:18px;display:block;flex:none}
+.appbar{height:58px;padding:0 18px;display:flex;align-items:center;gap:16px;background:rgba(11,7,22,.78);border-bottom:1px solid var(--line);backdrop-filter:blur(22px);flex:none;z-index:5}
+.brand{display:flex;align-items:center;gap:11px;min-width:210px}
+.brand-mark{width:34px;height:34px;border-radius:12px;display:grid;place-items:center;background:linear-gradient(140deg,#d39bff,#7555f5 65%,#4b31b8);box-shadow:0 0 28px rgba(160,112,255,.32),inset 0 1px 0 rgba(255,255,255,.35)}
+.brand-mark svg{width:22px;height:22px}
+.brand-copy{display:flex;flex-direction:column;line-height:1.05;gap:4px}
+.brand-copy strong{font-size:15px;letter-spacing:.2px;font-weight:780}
+.brand-copy small{font-size:9px;letter-spacing:1.65px;color:var(--soft);font-weight:750}
+.top-center{display:flex;align-items:center;justify-content:center;flex:1;min-width:0}
+.session-pill{display:inline-flex;align-items:center;gap:8px;padding:7px 11px;border-radius:99px;border:1px solid var(--line);background:rgba(255,255,255,.025);font-size:10px;font-weight:750;letter-spacing:1px;color:var(--muted);white-space:nowrap}
+.pulse{width:7px;height:7px;border-radius:50%;background:var(--good);box-shadow:0 0 12px var(--good);animation:pulse 2.2s ease-in-out infinite}
+.session-pill.connecting .pulse{background:var(--warn);box-shadow:0 0 12px var(--warn)}
+.session-pill.error .pulse{background:var(--bad);box-shadow:0 0 12px var(--bad)}
+.app-actions{display:flex;align-items:center;gap:7px}
+.icon-btn{width:36px;height:36px;border-radius:12px;display:grid;place-items:center;background:transparent;color:#c7b8e2;transition:background .2s,color .2s,transform .2s,border-color .2s;border:1px solid transparent}
+.icon-btn:hover{background:rgba(183,139,255,.12);color:white;border-color:var(--line);transform:translateY(-1px)}
+.icon-btn.active{background:rgba(182,138,255,.16);color:var(--accent-3)}
+#tabs-shell{height:46px;display:flex;align-items:stretch;gap:8px;padding:7px 12px 0;background:rgba(13,9,25,.86);border-bottom:1px solid var(--line);flex:none;z-index:4}
+#tabs{display:flex;align-items:stretch;gap:6px;min-width:0;overflow-x:auto;scrollbar-width:thin;scrollbar-color:rgba(181,139,255,.3) transparent;flex:1}
+.tab{height:38px;min-width:128px;max-width:230px;display:flex;align-items:center;gap:8px;padding:0 8px 0 12px;background:rgba(255,255,255,.035);border:1px solid transparent;border-bottom:0;border-radius:11px 11px 0 0;color:#a99cbe;position:relative;cursor:pointer;transition:background .22s,border-color .22s,color .22s;flex:none;animation:tab-in .26s cubic-bezier(.2,.8,.2,1)}
+.tab:hover{background:rgba(182,138,255,.09);color:#eee5ff}
+.tab.on{background:linear-gradient(180deg,rgba(53,37,86,.96),rgba(31,22,52,.98));border-color:var(--line-strong);color:#fff}
+.tab.on:after{content:"";height:2px;position:absolute;bottom:-1px;left:12px;right:12px;background:linear-gradient(90deg,var(--accent-2),var(--accent-3));border-radius:4px;box-shadow:0 0 12px var(--accent-2)}
+.tab-symbol{width:18px;height:18px;border-radius:6px;display:grid;place-items:center;color:var(--accent-3);background:rgba(182,138,255,.12);font-size:10px;flex:none}
+.tab-title{font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1;text-align:left}
+.tab-close{width:23px;height:23px;border-radius:7px;background:transparent;color:#9385a8;font-size:16px;line-height:1;display:grid;place-items:center;flex:none}
+.tab-close:hover{background:rgba(255,255,255,.12);color:#fff}
+#plus{width:32px;height:32px;margin:1px 0 0;border-radius:10px;background:transparent;color:var(--muted);font-size:20px;display:grid;place-items:center;flex:none;transition:all .2s}
+#plus:hover{background:rgba(182,138,255,.14);color:#fff;transform:rotate(90deg)}
+.tab-count{display:flex;align-items:center;color:var(--soft);font-size:10px;letter-spacing:.7px;padding:0 7px;white-space:nowrap}
+#bar{min-height:64px;display:flex;align-items:center;gap:9px;padding:10px 16px;background:linear-gradient(180deg,rgba(31,22,52,.98),rgba(25,17,43,.98));border-bottom:1px solid var(--line);flex:none;z-index:3}
+.nav-group{display:flex;align-items:center;gap:3px;flex:none}
+.nav{width:34px;height:34px;border-radius:11px;background:transparent;color:#c7b8e2;display:grid;place-items:center;transition:all .2s}
+.nav:hover:not(:disabled){background:rgba(182,138,255,.13);color:white;transform:translateY(-1px)}
+.nav:disabled{opacity:.32;cursor:default}
+.address-wrap{height:43px;display:flex;align-items:center;gap:9px;min-width:120px;flex:1;padding:0 8px 0 13px;border:1px solid rgba(181,139,255,.19);border-radius:14px;background:rgba(9,6,19,.62);box-shadow:inset 0 1px 5px rgba(0,0,0,.22);transition:border-color .2s,box-shadow .2s,background .2s}
+.address-wrap:focus-within{border-color:rgba(195,151,255,.72);box-shadow:0 0 0 3px rgba(158,111,255,.12),0 0 26px rgba(132,91,255,.11);background:rgba(12,8,25,.92)}
+.address-lock{color:var(--good);width:17px;height:17px;flex:none}
+#bq{height:100%;min-width:0;flex:1;color:#f4edff;background:transparent;border:0;outline:0;font-size:13px;letter-spacing:.1px}
+#bq::placeholder{color:#7f7195}
+#clear-address{width:27px;height:27px;border-radius:8px;background:transparent;color:var(--soft);font-size:17px;display:grid;place-items:center}
+#clear-address:hover{background:rgba(255,255,255,.08);color:white}
+.go{height:31px;padding:0 15px;border-radius:10px;color:#1b102a;font-size:11px;font-weight:850;letter-spacing:.3px;background:linear-gradient(105deg,#d7a9ff,#a17aff 58%,#8c7cff);box-shadow:0 5px 18px rgba(138,91,255,.24);transition:transform .18s,filter .18s,box-shadow .18s}
+.go:hover{transform:translateY(-1px);filter:brightness(1.09);box-shadow:0 7px 22px rgba(138,91,255,.34)}
+.go:active{transform:translateY(0) scale(.98)}
+#bookmark-page[aria-pressed="true"]{color:#ffd27b;background:rgba(255,210,123,.12)}
+#views{position:relative;flex:1;min-height:0;background:#0d0919}
+.view{position:absolute;inset:0;display:none;min-height:0}
+.view.on{display:block;animation:view-in .2s ease-out}
+.view iframe{position:absolute;inset:0;width:100%;height:100%;border:0;background:#fff;display:none}
+.view.nav-on iframe{display:block}
+.view.nav-on .home{display:none}
+.home{height:100%;overflow:auto;padding:clamp(24px,4vw,54px) 22px 30px;background:radial-gradient(ellipse at 50% 20%,rgba(120,78,210,.18),transparent 46%),radial-gradient(ellipse at 10% 100%,rgba(110,70,180,.12),transparent 42%);display:flex;flex-direction:column;align-items:center;position:relative;isolation:isolate}
+.home:before,.home:after{content:"";position:absolute;z-index:-1;width:280px;height:280px;border-radius:50%;filter:blur(85px);opacity:.14;pointer-events:none;animation:float 12s ease-in-out infinite alternate}
+.home:before{background:#8957ff;top:10%;left:8%}.home:after{background:#dc7bff;bottom:0;right:8%;animation-delay:-5s}
+.hero{width:min(760px,100%);display:flex;flex-direction:column;align-items:center;text-align:center;padding:12px 0 28px}
+.hero-emblem{width:68px;height:68px;border-radius:24px;display:grid;place-items:center;margin-bottom:20px;background:linear-gradient(145deg,rgba(218,174,255,.27),rgba(111,76,220,.22));border:1px solid rgba(221,190,255,.25);box-shadow:0 10px 46px rgba(132,84,245,.2),inset 0 1px rgba(255,255,255,.12);position:relative}
+.hero-emblem:after{content:"";position:absolute;inset:-7px;border:1px solid rgba(183,139,255,.17);border-radius:29px;animation:ring 4s ease-in-out infinite}
+.hero-emblem svg{width:36px;height:36px;filter:drop-shadow(0 0 10px rgba(201,161,255,.5))}
+.eyebrow{font-size:9px;letter-spacing:2.7px;font-weight:850;color:#bda6e2;margin:0 0 12px}
+.hero h1{font-size:clamp(34px,5.8vw,58px);line-height:1.02;letter-spacing:-2.8px;font-weight:850;margin:0;color:#fff}
+.hero h1 span{background:linear-gradient(100deg,#d8b4ff 5%,#a88aff 52%,#efb0ff 100%);background-clip:text;-webkit-background-clip:text;color:transparent}
+.hero-copy{font-size:13px;color:#a99cbe;line-height:1.65;margin:14px 0 22px;max-width:480px}
+.hf{width:min(640px,100%);height:58px;padding:6px 7px 6px 18px;display:flex;align-items:center;gap:10px;border-radius:17px;background:rgba(27,18,47,.88);border:1px solid rgba(193,157,255,.28);box-shadow:0 14px 50px rgba(0,0,0,.25),0 0 30px rgba(130,84,230,.08);transition:all .22s}
+.hf:focus-within{border-color:rgba(208,171,255,.78);box-shadow:0 0 0 4px rgba(157,110,255,.11),0 18px 54px rgba(0,0,0,.3)}
+.hf .search-glyph{color:#aa95d0;flex:none}
+.hf input{flex:1;min-width:0;background:transparent;border:0;outline:0;color:white;font-size:14px}
+.hf input::placeholder{color:#7f7195}
+.hf .go{height:42px;padding:0 20px;border-radius:12px;font-size:12px}
+.hero-note{font-size:10px;color:#786b8d;margin-top:12px;letter-spacing:.1px}
+.home-content{width:min(900px,100%);display:grid;grid-template-columns:1.05fr .95fr;gap:14px;margin-top:10px}
+.home-panel{min-height:168px;border:1px solid var(--line);border-radius:17px;background:linear-gradient(145deg,rgba(34,24,57,.85),rgba(22,15,38,.78));padding:16px 17px;box-shadow:0 12px 34px rgba(0,0,0,.12);backdrop-filter:blur(12px)}
+.panel-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:13px}
+.panel-title{display:flex;align-items:center;gap:8px;font-size:10px;font-weight:850;letter-spacing:1.3px;color:#d7c7ee}
+.panel-title svg{width:15px;height:15px;color:var(--accent)}
+.text-action{background:transparent;color:#a995ce;font-size:10px;font-weight:750;padding:5px 7px;border-radius:7px}
+.text-action:hover{color:white;background:rgba(182,138,255,.1)}
+.bookmark-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.bookmark-card{min-width:0;display:flex;align-items:center;gap:9px;padding:10px 9px;border:1px solid rgba(190,164,255,.1);border-radius:11px;background:rgba(255,255,255,.025);text-align:left;transition:all .18s;position:relative}
+.bookmark-card:hover{transform:translateY(-2px);background:rgba(182,138,255,.09);border-color:rgba(190,164,255,.28)}
+.bookmark-open{display:flex;align-items:center;gap:8px;min-width:0;flex:1;background:transparent;text-align:left}
+.bookmark-icon{width:27px;height:27px;display:grid;place-items:center;border-radius:9px;background:rgba(182,138,255,.12);color:#d8b5ff;font-size:11px;flex:none}
+.bookmark-name{font-size:11px;color:#e9ddfa;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bookmark-remove{width:20px;height:20px;border-radius:6px;display:grid;place-items:center;background:transparent;color:#786b8d;font-size:14px;opacity:0;transition:opacity .15s}
+.bookmark-card:hover .bookmark-remove,.bookmark-remove:focus-visible{opacity:1}
+.bookmark-remove:hover{color:#ff9bb6;background:rgba(255,130,165,.1)}
+.empty-state{font-size:11px;color:#847695;line-height:1.55;padding:9px 2px}
+.history-list{display:flex;flex-direction:column;gap:5px;max-height:132px;overflow:auto}
+.history-row{display:flex;align-items:center;gap:9px;width:100%;padding:7px 8px;border-radius:9px;background:transparent;text-align:left;transition:background .18s}
+.history-row:hover{background:rgba(182,138,255,.09)}
+.history-row .history-icon{width:25px;height:25px;display:grid;place-items:center;border-radius:8px;background:rgba(182,138,255,.1);color:#c7a4fa;flex:none}
+.history-row .history-copy{display:flex;flex-direction:column;min-width:0;flex:1;gap:2px}
+.history-row strong{font-size:10px;font-weight:650;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#ded1f0}
+.history-row small{font-size:9px;color:#81738f;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.shortcuts-hint{display:flex;justify-content:center;gap:13px;flex-wrap:wrap;margin-top:20px;color:#70647f;font-size:9px}
+kbd{font-family:inherit;padding:3px 6px;border:1px solid rgba(190,164,255,.16);border-radius:5px;background:rgba(255,255,255,.035);color:#a798ba;font-size:9px}
+#statusbar{height:25px;flex:none;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:0 13px;background:#100b1d;border-top:1px solid rgba(190,164,255,.1);font-size:9px;color:#8d7e9f;letter-spacing:.3px}
+.status-side{display:flex;align-items:center;gap:13px;min-width:0}.status-item{display:inline-flex;align-items:center;gap:6px;white-space:nowrap}.status-dot{width:5px;height:5px;border-radius:50%;background:var(--good)}
+#msg{position:fixed;left:50%;bottom:42px;z-index:40;max-width:min(680px,92vw);padding:12px 16px;border-radius:13px;background:rgba(42,20,52,.96);border:1px solid rgba(255,151,188,.38);color:#ffd9e5;box-shadow:var(--shadow);font-size:12px;line-height:1.5;display:none;transform:translateX(-50%);animation:toast-in .22s ease-out}
+#settings-backdrop{position:fixed;inset:0;z-index:30;background:rgba(4,2,10,.58);backdrop-filter:blur(5px);opacity:0;visibility:hidden;transition:opacity .22s,visibility .22s}
+#settings-backdrop.open{opacity:1;visibility:visible}
+#settings-panel{position:absolute;right:0;top:0;height:100%;width:min(490px,96vw);display:flex;flex-direction:column;background:linear-gradient(165deg,#211636,#120d20 70%);border-left:1px solid rgba(206,177,255,.22);box-shadow:-25px 0 90px rgba(0,0,0,.46);transform:translateX(28px);transition:transform .26s cubic-bezier(.2,.8,.2,1)}
+#settings-backdrop.open #settings-panel{transform:translateX(0)}
+.settings-head{display:flex;align-items:center;justify-content:space-between;padding:20px 21px 17px;border-bottom:1px solid var(--line)}
+.settings-title{display:flex;align-items:center;gap:11px}.settings-title-mark{width:36px;height:36px;border-radius:12px;background:rgba(182,138,255,.15);color:#d7b5ff;display:grid;place-items:center}.settings-title strong{display:block;font-size:15px}.settings-title small{display:block;color:#9282a7;font-size:10px;margin-top:3px}
+.settings-layout{display:grid;grid-template-columns:130px minmax(0,1fr);flex:1;min-height:0}
+.settings-nav{padding:17px 10px;border-right:1px solid var(--line);display:flex;flex-direction:column;gap:5px}
+.settings-nav button{height:39px;display:flex;align-items:center;gap:9px;padding:0 10px;border-radius:10px;background:transparent;color:#a798ba;font-size:11px;text-align:left;transition:all .18s}
+.settings-nav button svg{width:16px;height:16px}.settings-nav button:hover{background:rgba(182,138,255,.08);color:#fff}.settings-nav button.active{background:linear-gradient(100deg,rgba(155,112,245,.22),rgba(182,138,255,.08));color:#f4e9ff;border:1px solid rgba(190,164,255,.14)}
+.settings-content{padding:20px;overflow:auto}.settings-section{display:none;animation:view-in .2s ease-out}.settings-section.active{display:block}
+.settings-section h3{font-size:15px;margin:0 0 5px}.section-description{font-size:10px;line-height:1.55;color:#9384a7;margin:0 0 18px}
+.setting-row{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:13px 0;border-bottom:1px solid rgba(190,164,255,.09)}
+.setting-row:last-child{border-bottom:0}.setting-copy{min-width:0}.setting-copy strong{display:block;font-size:11px;font-weight:700;color:#eee4fb}.setting-copy small{display:block;font-size:9px;line-height:1.5;color:#8d7e9f;margin-top:4px;max-width:270px}
+.setting-control{flex:none;max-width:155px}.setting-select{height:34px;max-width:155px;border-radius:9px;border:1px solid var(--line-strong);background:#211832;color:#eadef7;padding:0 9px;font-size:10px}
+.switch{position:relative;width:40px;height:23px;flex:none}.switch input{position:absolute;opacity:0;width:1px;height:1px}.switch span{position:absolute;inset:0;border-radius:30px;background:#493a5c;border:1px solid rgba(255,255,255,.12);transition:background .2s}.switch span:after{content:"";position:absolute;left:3px;top:3px;width:15px;height:15px;border-radius:50%;background:#d4c5e6;transition:transform .2s}.switch input:checked+span{background:linear-gradient(90deg,#8c65e7,#bf83ff)}.switch input:checked+span:after{transform:translateX(17px);background:white}.switch input:focus-visible+span{outline:2px solid var(--accent);outline-offset:3px}
+.settings-action{border:1px solid rgba(190,164,255,.2);background:rgba(182,138,255,.09);color:#e6d5ff;padding:8px 11px;border-radius:9px;font-size:10px;font-weight:750;transition:all .18s}.settings-action:hover{background:rgba(182,138,255,.17);border-color:rgba(190,164,255,.38)}.settings-action.danger{color:#ffb4c5;background:rgba(255,111,153,.07);border-color:rgba(255,111,153,.2)}
+.endpoint-card{border:1px solid var(--line);background:rgba(8,5,16,.28);padding:11px;border-radius:11px;margin:10px 0}.endpoint-line{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:5px 0}.endpoint-line span:first-child{font-size:9px;color:#9384a7}.endpoint-line code{font-size:9px;color:#d9c7f3;overflow-wrap:anywhere;text-align:right}
+.diag-output{white-space:pre-wrap;overflow-wrap:anywhere;max-height:185px;overflow:auto;padding:11px;border-radius:10px;background:#0b0813;border:1px solid var(--line);font:10px/1.55 ui-monospace,SFMono-Regular,Consolas,monospace;color:#c9b9df;margin-top:12px;display:none}
+.settings-foot{padding:12px 20px;border-top:1px solid var(--line);font-size:9px;line-height:1.5;color:#81728f}
+body.reduced-motion *,body.reduced-motion *:before,body.reduced-motion *:after{animation-duration:.01ms!important;animation-iteration-count:1!important;scroll-behavior:auto!important;transition-duration:.01ms!important}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(.82)}}
+@keyframes tab-in{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
+@keyframes view-in{from{opacity:.55}to{opacity:1}}
+@keyframes float{from{transform:translate3d(0,0,0) scale(1)}to{transform:translate3d(25px,-20px,0) scale(1.12)}}
+@keyframes ring{0%,100%{transform:scale(1);opacity:.55}50%{transform:scale(1.07);opacity:.15}}
+@keyframes toast-in{from{opacity:0;transform:translate(-50%,8px)}to{opacity:1;transform:translate(-50%,0)}}
+@media(max-width:760px){.appbar{padding:0 10px;gap:8px}.brand{min-width:0}.brand-copy small{display:none}.top-center{justify-content:flex-end}.session-pill{font-size:8px;padding:6px 8px}.app-actions{gap:1px}#tabs-shell{padding-left:7px;padding-right:7px}#bar{padding:8px;gap:5px}.nav{width:31px;height:32px}.address-wrap{height:40px;padding-left:10px;gap:6px}.go{padding:0 11px}.home-content{grid-template-columns:1fr}.hero{padding-top:8px}.home{padding-left:15px;padding-right:15px}.settings-layout{grid-template-columns:105px minmax(0,1fr)}.settings-nav{padding:12px 7px}.settings-nav button{padding:0 7px;font-size:10px}.settings-content{padding:15px}.tab{min-width:112px}}
+@media(max-width:480px){.brand-mark{width:31px;height:31px}.brand-copy strong{font-size:13px}.session-pill{letter-spacing:.3px}.app-actions .optional-mobile{display:none}.nav-group{gap:0}.nav{width:28px}.address-lock{display:none}#bq{font-size:11px}.address-wrap{padding:0 5px}.go{font-size:10px;padding:0 9px}.hero h1{letter-spacing:-1.8px}.hero-copy{font-size:12px}.hf{height:53px;padding-left:12px}.hf .go{height:39px;padding:0 13px}.bookmark-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.settings-layout{grid-template-columns:1fr}.settings-nav{flex-direction:row;overflow-x:auto;border-right:0;border-bottom:1px solid var(--line);padding:8px}.settings-nav button{white-space:nowrap;flex:none;height:34px}.settings-nav button span{display:none}.settings-content{padding:14px 17px}.setting-copy small{max-width:210px}#statusbar{padding:0 8px}.status-side{gap:8px}}
+</style>
+</head>
+<body>
+<header class="appbar">
+  <div class="brand" aria-label="Portal Browser home">
+    <div class="brand-mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M12 2.8c4.5 0 8.2 3.7 8.2 8.2s-3.7 8.2-8.2 8.2-8.2-3.7-8.2-8.2S7.5 2.8 12 2.8Z" stroke="white" stroke-width="1.6"/><path d="M4.4 11h15.2M12 3c2.1 2.3 3.1 4.9 3.1 8s-1 5.7-3.1 8M12 3c-2.1 2.3-3.1 4.9-3.1 8s1 5.7 3.1 8" stroke="white" stroke-width="1.25" stroke-linecap="round"/><path d="m16.8 3.8 1.1-1.5M19.2 6l1.5-.7" stroke="#f0c9ff" stroke-width="1.5" stroke-linecap="round"/></svg></div>
+    <div class="brand-copy"><strong>Portal</strong><small>BROWSER WORKSPACE</small></div>
+  </div>
+  <div class="top-center"><div class="session-pill" id="proxy-pill"><i class="pulse"></i><span id="proxy-pill-text">READY WHEN YOU ARE</span></div></div>
+  <div class="app-actions">
+    <button class="icon-btn" id="bookmark-page" title="Bookmark this page" aria-label="Bookmark this page" aria-pressed="false"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3.8h12a1 1 0 0 1 1 1V21l-7-4-7 4V4.8a1 1 0 0 1 1-1Z"/></svg></button>
+    <button class="icon-btn optional-mobile" id="fullscreen-btn" title="Toggle fullscreen" aria-label="Toggle fullscreen"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M8 3H3v5M16 3h5v5M3 16v5h5M21 16v5h-5"/></svg></button>
+    <button class="icon-btn" id="settings-btn" title="Settings" aria-label="Settings"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="m19.4 15 .1.1 1.1.9-1.1 1.9-1.4-.5a7.8 7.8 0 0 1-1.5.9l-.3 1.5h-2.2l-.3-1.5a7.8 7.8 0 0 1-1.6-.9l-1.4.5-1.1-1.9 1.1-.9a7.6 7.6 0 0 1 0-1.8l-1.1-.9 1.1-1.9 1.4.5a7.8 7.8 0 0 1 1.6-.9l.3-1.5h2.2l.3 1.5a7.8 7.8 0 0 1 1.5.9l1.4-.5 1.1 1.9-1.1.9a7.6 7.6 0 0 1 0 1.8Z" transform="translate(-1 -1) scale(1.08)"/></svg></button>
+  </div>
+</header>
+<div id="tabs-shell"><div id="tabs" aria-label="Browser tabs"></div><button id="plus" title="New tab" aria-label="New tab">+</button><div class="tab-count" id="tab-count">1 TAB</div></div>
+<div id="bar">
+  <div class="nav-group">
+    <button class="nav" id="back" title="Back" aria-label="Back" disabled><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m14.5 5-7 7 7 7M8 12h12"/></svg></button>
+    <button class="nav" id="fwd" title="Forward" aria-label="Forward" disabled><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m9.5 5 7 7-7 7M16 12H4"/></svg></button>
+    <button class="nav" id="reload" title="Reload" aria-label="Reload"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 11a8 8 0 0 0-14.8-3L3 11m0-6v6h6M4 13a8 8 0 0 0 14.8 3L21 13m0 6v-6h-6"/></svg></button>
+    <button class="nav optional-mobile" id="home-btn" title="Home" aria-label="Home"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1h-5v-7h-6v7H4a1 1 0 0 1-1-1Z"/></svg></button>
+  </div>
+  <form id="bf" class="address-wrap" role="search">
+    <svg class="address-lock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 1 1 8 0v3"/><path d="m9.5 15 1.7 1.7 3.4-3.4"/></svg>
+    <input id="bq" placeholder="Search the web or enter an address" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="Search the web or enter an address">
+    <button type="button" id="clear-address" title="Clear address" aria-label="Clear address">×</button>
+    <button class="go" type="submit">GO <span aria-hidden="true">↗</span></button>
+  </form>
+</div>
+<main id="views" aria-label="Browser content"></main>
+<footer id="statusbar">
+  <div class="status-side"><span class="status-item"><i class="status-dot" id="status-dot"></i><span id="status-left">Portal is ready</span></span></div>
+  <div class="status-side"><span class="status-item" id="status-transport">TRANSPORT · AUTO</span><span class="status-item">PORTAL WORKSPACE</span></div>
+</footer>
+<div id="msg" role="status" aria-live="polite"></div>
+
+<template id="tpl">
+  <section class="view">
+    <div class="home">
+      <div class="hero">
+        <div class="hero-emblem" aria-hidden="true"><svg viewBox="0 0 40 40" fill="none"><circle cx="20" cy="20" r="14.5" stroke="#ead8ff" stroke-width="1.5"/><ellipse cx="20" cy="20" rx="6.5" ry="14.5" stroke="#ead8ff" stroke-width="1.3"/><path d="M5.8 20h28.4M8.5 12.5h23M8.5 27.5h23" stroke="#ead8ff" stroke-width="1.2" stroke-linecap="round"/><path d="m28.8 7.8 2.3-2.5" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg></div>
+        <p class="eyebrow">YOUR SPACE. YOUR NEXT DISCOVERY.</p>
+        <h1>Make room for<br><span>curiosity.</span></h1>
+        <p class="hero-copy">One clean space for the things you want to find. Search the web or drop in a website address.</p>
+        <form class="hf" role="search"><svg class="search-glyph" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="10.8" cy="10.8" r="6.8"/><path d="m16 16 5 5"/></svg><input placeholder="What are you looking for?" autocomplete="off" spellcheck="false"><button class="go" type="submit">SEARCH <span aria-hidden="true">↗</span></button></form>
+        <div class="hero-note">Your searches stay in this browser workspace unless you clear them.</div>
+      </div>
+      <div class="home-content">
+        <section class="home-panel"><div class="panel-head"><div class="panel-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3.8h12a1 1 0 0 1 1 1V21l-7-4-7 4V4.8a1 1 0 0 1 1-1Z"/></svg>YOUR BOOKMARKS</div><button class="text-action" type="button" data-action="bookmark-info">How to add</button></div><div class="bookmark-grid" data-role="bookmarks"></div></section>
+        <section class="home-panel"><div class="panel-head"><div class="panel-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/></svg>RECENT PAGES</div><button class="text-action" type="button" data-action="clear-history">Clear</button></div><div class="history-list" data-role="history"></div></section>
+      </div>
+      <div class="shortcuts-hint"><span><kbd>Ctrl</kbd> + <kbd>L</kbd> address bar</span><span><kbd>Ctrl</kbd> + <kbd>T</kbd> new tab</span><span><kbd>Ctrl</kbd> + <kbd>W</kbd> close tab</span><span><kbd>Esc</kbd> close settings</span></div>
+    </div>
+    <iframe title="Proxied webpage" referrerpolicy="no-referrer" allow="fullscreen; clipboard-read; clipboard-write"></iframe>
+  </section>
+</template>
+
+<div id="settings-backdrop" aria-hidden="true">
+  <aside id="settings-panel" role="dialog" aria-modal="true" aria-labelledby="settings-heading">
+    <div class="settings-head"><div class="settings-title"><div class="settings-title-mark"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="m19.4 15 .1.1 1.1.9-1.1 1.9-1.4-.5a7.8 7.8 0 0 1-1.5.9l-.3 1.5h-2.2l-.3-1.5a7.8 7.8 0 0 1-1.6-.9l-1.4.5-1.1-1.9 1.1-.9a7.6 7.6 0 0 1 0-1.8l-1.1-.9 1.1-1.9 1.4.5a7.8 7.8 0 0 1 1.6-.9l.3-1.5h2.2l.3 1.5a7.8 7.8 0 0 1 1.5.9l1.4-.5 1.1 1.9-1.1.9a7.6 7.6 0 0 1 0 1.8Z" transform="translate(-1 -1) scale(1.08)"/></svg></div><div><strong id="settings-heading">Settings</strong><small>Make Portal feel like yours</small></div></div><button class="icon-btn" id="settings-close" aria-label="Close settings" title="Close settings">×</button></div>
+    <div class="settings-layout">
+      <nav class="settings-nav" aria-label="Settings sections">
+        <button class="active" type="button" data-settings-tab="general"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="3"/><path d="M19 13.5a7.2 7.2 0 0 0 0-3l2-1.3-2-3.4-2.2.8a7.8 7.8 0 0 0-2.6-1.5L13.8 3h-3.6l-.4 2.1a7.8 7.8 0 0 0-2.6 1.5L5 5.8l-2 3.4 2 1.3a7.2 7.2 0 0 0 0 3l-2 1.3 2 3.4 2.2-.8a7.8 7.8 0 0 0 2.6 1.5l.4 2.1h3.6l.4-2.1a7.8 7.8 0 0 0 2.6-1.5l2.2.8 2-3.4Z"/></svg><span>General</span></button>
+        <button type="button" data-settings-tab="search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><circle cx="10.8" cy="10.8" r="6.8"/><path d="m16 16 5 5"/></svg><span>Search</span></button>
+        <button type="button" data-settings-tab="privacy"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-11V5l-8-3-8 3v6c0 7 8 11 8 11Z"/><path d="m9 12 2 2 4-4"/></svg><span>Privacy</span></button>
+        <button type="button" data-settings-tab="proxy"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="6" rx="2"/><rect x="3" y="14" width="18" height="6" rx="2"/><path d="M7 7h.01M7 17h.01M11 7h6M11 17h6"/></svg><span>Connection</span></button>
+      </nav>
+      <div class="settings-content">
+        <section class="settings-section active" data-settings-section="general"><h3>General</h3><p class="section-description">Tune the look and feel of your workspace.</p>
+          <div class="setting-row"><div class="setting-copy"><strong>Color atmosphere</strong><small>Keep the purple identity and choose its shade.</small></div><select class="setting-select setting-control" id="theme-select"><option value="aurora">Aurora purple</option><option value="nebula">Nebula violet</option><option value="plum">Plum glow</option></select></div>
+          <div class="setting-row"><div class="setting-copy"><strong>Motion and animations</strong><small>Tab transitions, soft glows, and interface movement.</small></div><label class="switch"><input id="motion-toggle" type="checkbox" checked><span></span></label></div>
+          <div class="setting-row"><div class="setting-copy"><strong>Show recent pages</strong><small>Display pages you have opened on the new-tab screen.</small></div><label class="switch"><input id="history-toggle" type="checkbox" checked><span></span></label></div>
+        </section>
+        <section class="settings-section" data-settings-section="search"><h3>Search</h3><p class="section-description">Choose what Portal uses when you type words instead of a web address.</p>
+          <div class="setting-row"><div class="setting-copy"><strong>Default search engine</strong><small>This affects searches from both address bars.</small></div><select class="setting-select setting-control" id="engine-select"><option value="duckduckgo">DuckDuckGo</option><option value="brave">Brave Search</option><option value="google">Google</option><option value="bing">Bing</option></select></div>
+          <div class="setting-row"><div class="setting-copy"><strong>Search suggestions</strong><small>Portal does not send keystrokes to a suggestion service. Searches run after you submit.</small></div><span class="setting-control" style="font-size:9px;color:var(--good)">OFF BY DESIGN</span></div>
+        </section>
+        <section class="settings-section" data-settings-section="privacy"><h3>Privacy &amp; data</h3><p class="section-description">Control the information this browser workspace stores on this device.</p>
+          <div class="setting-row"><div class="setting-copy"><strong>Clear recent pages</strong><small>Remove the locally saved browsing list. Does not clear data saved by websites.</small></div><button class="settings-action" id="clear-history-setting" type="button">Clear history</button></div>
+          <div class="setting-row"><div class="setting-copy"><strong>Remove bookmarks</strong><small>Delete the bookmarks you saved in Portal.</small></div><button class="settings-action" id="clear-bookmarks-setting" type="button">Clear bookmarks</button></div>
+          <div class="setting-row"><div class="setting-copy"><strong>Forget this device's Portal data</strong><small>Clears Portal preferences, recent pages, and bookmarks. Website accounts and server logs are separate.</small></div><button class="settings-action danger" id="forget-data" type="button">Forget data</button></div>
+        </section>
+        <section class="settings-section" data-settings-section="proxy"><h3>Connection</h3><p class="section-description">Choose a supported transport and inspect the components used by this deployment.</p>
+          <div class="setting-row"><div class="setting-copy"><strong>Transport mode</strong><small>Auto tries the available transport. Alternate modes are for connection compatibility, not for overriding a site's or network's access rules.</small></div><select class="setting-select setting-control" id="transport-select"><option value="auto">Automatic</option><option value="libcurl">Libcurl</option><option value="epoxy">Epoxy</option></select></div>
+          <div class="endpoint-card"><div class="endpoint-line"><span>PROXY ROUTE</span><code>/~/sj/</code></div><div class="endpoint-line"><span>WEBSOCKET ENDPOINT</span><code id="wisp-endpoint">wss://…/wisp/</code></div><div class="endpoint-line"><span>ACTIVE BUILD</span><code id="build-label">portal-20261030-6</code></div></div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="settings-action" id="run-diagnostics" type="button">Run diagnostics</button><button class="settings-action" id="repair-storage" type="button">Repair proxy storage</button></div>
+          <pre class="diag-output" id="diag-output"></pre>
+          <p class="section-description" style="margin-top:14px">A proxy cannot guarantee access to every website. Some sites block proxy traffic, require their own sign-in, or enforce regional, age, account, or network rules. Portal does not remove those restrictions.</p>
+        </section>
+      </div>
+    </div>
+    <div class="settings-foot">Portal is a browser interface. Website availability and data handling are also governed by the sites and proxy server you connect to.</div>
+  </aside>
+</div>
+
+<script src="/baremux/index.js?v=portal-20261030-6"></script>
+<script src="/scram/scramjet.all.js?v=portal-20261030-6"></script>
+<script>
+'use strict';
+var $ = function (id) { return document.getElementById(id); };
+var ready = null, scramjet = null, connection = null, tabs = [], active = null;
+var BUILD_ID = 'portal-20261030-6';
+var KEYS = { settings: 'portal-ui-settings-v6', bookmarks: 'portal-bookmarks-v1', history: 'portal-history-v1' };
+var defaults = { theme: 'aurora', animations: true, saveHistory: true, searchEngine: 'duckduckgo', transport: 'auto' };
+var settings = readJSON(KEYS.settings, defaults);
+settings = Object.assign({}, defaults, settings || {});
+var engines = {
+  duckduckgo: function (q) { return 'https://duckduckgo.com/?q=' + encodeURIComponent(q); },
+  brave: function (q) { return 'https://search.brave.com/search?q=' + encodeURIComponent(q); },
+  google: function (q) { return 'https://www.google.com/search?q=' + encodeURIComponent(q); },
+  bing: function (q) { return 'https://www.bing.com/search?q=' + encodeURIComponent(q); }
+};
+function readJSON(key, fallback) { try { var v = localStorage.getItem(key); return v ? JSON.parse(v) : fallback; } catch (e) { return fallback; } }
+function writeJSON(key, value) { try { localStorage.setItem(key, JSON.stringify(value)); } catch (e) { console.warn('Portal could not save local data:', e); } }
+function getBookmarks() { var value = readJSON(KEYS.bookmarks, []); return Array.isArray(value) ? value : []; }
+function getHistory() { var value = readJSON(KEYS.history, []); return Array.isArray(value) ? value : []; }
+function saveSettings() { writeJSON(KEYS.settings, settings); }
+function applySettings() {
+  document.documentElement.dataset.accent = settings.theme;
+  document.body.classList.toggle('reduced-motion', !settings.animations);
+  $('theme-select').value = settings.theme;
+  $('motion-toggle').checked = !!settings.animations;
+  $('history-toggle').checked = !!settings.saveHistory;
+  $('engine-select').value = settings.searchEngine;
+  $('transport-select').value = settings.transport;
+  $('status-transport').textContent = 'TRANSPORT · ' + settings.transport.toUpperCase();
+  $('wisp-endpoint').textContent = (location.protocol === 'https:' ? 'wss://' : 'ws://') + location.host + '/wisp/';
+  $('build-label').textContent = BUILD_ID;
+}
+function toUrl(value) {
+  var text = String(value || '').trim();
+  if (!text) return '';
+  if (/^https?:\/\//i.test(text)) { try { return new URL(text).href; } catch (e) {} }
+  if (/^(localhost|(?:[a-z0-9-]+\.)+[a-z]{2,})(?::\d{1,5})?(?:[/?#][^\s]*)?$/i.test(text) || /^\d{1,3}(?:\.\d{1,3}){3}(?::\d{1,5})?(?:[/?#][^\s]*)?$/.test(text)) return 'https://' + text;
+  return (engines[settings.searchEngine] || engines.duckduckgo)(text);
+}
+function hostOf(url) { try { return new URL(url).hostname.replace(/^www\./, ''); } catch (e) { return url || 'New tab'; } }
+function setProxyStatus(state, message) {
+  var pill = $('proxy-pill'); pill.classList.toggle('connecting', state === 'connecting'); pill.classList.toggle('error', state === 'error');
+  $('proxy-pill-text').textContent = message;
+  $('status-dot').style.background = state === 'error' ? 'var(--bad)' : state === 'connecting' ? 'var(--warn)' : 'var(--good)';
+  $('status-left').textContent = state === 'error' ? 'Connection needs attention' : state === 'connecting' ? 'Starting secure connection…' : message;
+}
+function say(message) {
+  var element = $('msg'); element.textContent = message; element.style.display = 'block';
+  clearTimeout(say.timer); say.timer = setTimeout(function () { element.style.display = 'none'; }, 9000);
+}
+function makeScramjetController(Controller) {
+  return new Controller({ prefix: '/~/sj/', files: { wasm: '/scram/scramjet.wasm.wasm', all: '/scram/scramjet.all.js', sync: '/scram/scramjet.sync.js' } });
+}
+function deleteIndexedDB(name) {
+  return new Promise(function (resolve, reject) {
+    var request; try { request = indexedDB.deleteDatabase(name); } catch (error) { reject(error); return; }
+    request.onsuccess = function () { resolve(); };
+    request.onerror = function () { reject(request.error || new Error('Could not reset Scramjet database ' + name)); };
+    request.onblocked = function () { reject(new Error('A Scramjet database is still open in another Portal tab. Close other Portal tabs and try again.')); };
+  });
+}
+async function findScramjetDatabases() {
+  if (indexedDB && typeof indexedDB.databases === 'function') {
+    var databases = await indexedDB.databases();
+    return databases.map(function (database) { return database.name; }).filter(function (name) { return !!name && /scramjet/i.test(name); });
+  }
+  return ['__scramjet_controller', '__scramjet', 'scramjet', 'scramjet-config'];
+}
+async function resetScramjetDatabases(force) {
+  var marker = 'portal-scramjet-idb-repair-v5';
+  if (!force && localStorage.getItem(marker) === 'done') return [];
+  var names = await findScramjetDatabases();
+  for (var i = 0; i < names.length; i++) await deleteIndexedDB(names[i]);
+  if (!force) localStorage.setItem(marker, 'done');
+  return names;
+}
+async function initializeScramjet(Controller) {
+  await resetScramjetDatabases(false);
+  scramjet = makeScramjetController(Controller);
+  try {
+    if (typeof scramjet.openIDB === 'function') { var db = await scramjet.openIDB(); console.info('Scramjet database:', db.name, db.version, Array.from(db.objectStoreNames)); db.close(); }
+    await scramjet.init();
+  } catch (error) {
+    var message = String(error && error.message ? error.message : error);
+    if (!/object store|object stores|NotFoundError/i.test(message)) throw error;
+    await resetScramjetDatabases(true);
+    scramjet = makeScramjetController(Controller);
+    if (typeof scramjet.openIDB === 'function') { var repaired = await scramjet.openIDB(); console.info('Repaired Scramjet database:', repaired.name, repaired.version, Array.from(repaired.objectStoreNames)); repaired.close(); }
+    await scramjet.init();
+  }
+}
+async function checkAsset(path) {
+  var response;
+  try { response = await fetch(path, { method: 'HEAD', cache: 'no-store' }); }
+  catch (error) { throw new Error('Could not reach required proxy file ' + path + ': ' + error.message); }
+  if (!response.ok) throw new Error('Required proxy file is missing: ' + path + ' (HTTP ' + response.status + ')');
+}
+async function waitForServiceWorker() {
+  await navigator.serviceWorker.ready;
+  var expectedMarker = 'build=' + BUILD_ID;
+  function current(worker) { return !!worker && worker.scriptURL.indexOf(expectedMarker) !== -1; }
+  if (current(navigator.serviceWorker.controller)) return;
+  await new Promise(function (resolve, reject) {
+    var done = false;
+    function clean() { clearTimeout(timer); navigator.serviceWorker.removeEventListener('controllerchange', changed); }
+    function changed() { if (current(navigator.serviceWorker.controller) && !done) { done = true; clean(); resolve(); } }
+    var timer = setTimeout(function () { if (!done) { done = true; clean(); reject(new Error('The updated service worker did not take control. Close other Portal tabs and reload.')); } }, 12000);
+    navigator.serviceWorker.addEventListener('controllerchange', changed); changed();
+  });
+}
+async function setup() {
+  setProxyStatus('connecting', 'CONNECTING');
+  if (!('serviceWorker' in navigator)) throw new Error('Service workers are unavailable. Open Portal over HTTPS.');
+  if (!window.BareMux || typeof window.BareMux.BareMuxConnection !== 'function') throw new Error('BareMux did not load. Check /baremux/index.js.');
+  if (typeof window.$scramjetLoadController !== 'function') throw new Error('Scramjet did not load. Check /scram/scramjet.all.js.');
+  await Promise.all(['/baremux/worker.js','/scram/scramjet.all.js','/scram/scramjet.wasm.wasm','/scram/scramjet.sync.js'].map(checkAsset));
+  var wisp = (location.protocol === 'https:' ? 'wss:' : 'ws:') + '//' + location.host + '/wisp/';
+  var requested = new URLSearchParams(location.search).get('transport') || settings.transport;
+  var useCurl = requested !== 'epoxy';
+  if (useCurl) {
+    try { await checkAsset('/libcurl/index.mjs'); }
+    catch (error) { if (requested === 'libcurl') throw error; useCurl = false; console.warn('Falling back to Epoxy:', error); }
+  }
+  if (!useCurl) await checkAsset('/epoxy/index.mjs');
+  var transportPath = useCurl ? '/libcurl/index.mjs' : '/epoxy/index.mjs';
+  connection = new BareMux.BareMuxConnection('/baremux/worker.js');
+  var transportOptions = useCurl ? [{ websocket: wisp }] : [{ wisp: wisp }];
+  await connection.setTransport(transportPath, transportOptions);
+  var Controller = window.$scramjetLoadController().ScramjetController;
+  if (typeof Controller !== 'function') throw new Error('ScramjetController was not exported by the Scramjet bundle.');
+  try { await navigator.serviceWorker.register('/sw.js?build=' + BUILD_ID, { scope: '/', updateViaCache: 'none' }); }
+  catch (error) { throw new Error('Could not register /sw.js: ' + error.message); }
+  await waitForServiceWorker();
+  await initializeScramjet(Controller);
+  var transportName = useCurl ? 'LIBCURL' : 'EPOXY';
+  $('status-transport').textContent = 'TRANSPORT · ' + transportName;
+  setProxyStatus('ready', 'PROXY READY · ' + transportName);
+}
+function saveHistory(url, title) {
+  if (!settings.saveHistory) return;
+  var list = getHistory().filter(function (item) { return item.url !== url; });
+  list.unshift({ url: url, title: title || hostOf(url), time: Date.now() });
+  writeJSON(KEYS.history, list.slice(0, 16));
+  tabs.forEach(renderHome);
+}
+function renderHome(tab) {
+  if (!tab || !tab.view) return;
+  var bookmarksTarget = tab.view.querySelector('[data-role="bookmarks"]');
+  var historyTarget = tab.view.querySelector('[data-role="history"]');
+  if (!bookmarksTarget || !historyTarget) return;
+  bookmarksTarget.replaceChildren();
+  var bookmarks = getBookmarks();
+  if (!bookmarks.length) {
+    var empty = document.createElement('div'); empty.className = 'empty-state'; empty.textContent = 'No bookmarks yet. Open a page and tap the bookmark icon to save it here.'; bookmarksTarget.appendChild(empty);
+  } else {
+    bookmarks.slice(0,6).forEach(function (item) {
+      var card = document.createElement('div'); card.className = 'bookmark-card';
+      var open = document.createElement('button'); open.type = 'button'; open.className = 'bookmark-open'; open.title = item.url;
+      var icon = document.createElement('span'); icon.className = 'bookmark-icon'; icon.textContent = (item.title || hostOf(item.url)).slice(0,1).toUpperCase();
+      var name = document.createElement('span'); name.className = 'bookmark-name'; name.textContent = item.title || hostOf(item.url);
+      open.append(icon,name); open.addEventListener('click', function () { go(item.url, tab); });
+      var remove = document.createElement('button'); remove.type = 'button'; remove.className = 'bookmark-remove'; remove.textContent = '×'; remove.title = 'Remove bookmark'; remove.setAttribute('aria-label','Remove bookmark');
+      remove.addEventListener('click', function () { writeJSON(KEYS.bookmarks,getBookmarks().filter(function (b) { return b.url !== item.url; })); tabs.forEach(renderHome); updateBookmarkButton(); });
+      card.append(open,remove); bookmarksTarget.appendChild(card);
+    });
+  }
+  historyTarget.replaceChildren();
+  var history = settings.saveHistory ? getHistory().slice(0,5) : [];
+  if (!history.length) { var blank = document.createElement('div'); blank.className = 'empty-state'; blank.textContent = settings.saveHistory ? 'Pages you visit will show up here.' : 'Recent pages are turned off in Settings.'; historyTarget.appendChild(blank); }
+  history.forEach(function (item) {
+    var button = document.createElement('button'); button.type='button'; button.className='history-row';
+    var ico=document.createElement('span');ico.className='history-icon';ico.textContent='↗';
+    var copy=document.createElement('span');copy.className='history-copy';
+    var title=document.createElement('strong');title.textContent=item.title||hostOf(item.url);
+    var host=document.createElement('small');host.textContent=hostOf(item.url);
+    copy.append(title,host);button.append(ico,copy);button.addEventListener('click',function(){go(item.url,tab);});historyTarget.appendChild(button);
+  });
+}
+function select(tab) {
+  active = tab;
+  tabs.forEach(function (item) { item.view.classList.toggle('on',item===tab); item.el.classList.toggle('on',item===tab); });
+  $('bq').value = tab.url || '';
+  $('tab-count').textContent = tabs.length + (tabs.length === 1 ? ' TAB' : ' TABS');
+  updateBookmarkButton();
+  $('back').disabled = !tab.scramFrame;
+  $('fwd').disabled = !tab.scramFrame;
+  $('status-left').textContent = tab.url ? hostOf(tab.url) : 'Portal is ready';
+}
+function newTab() {
+  var tab = { url:'', scramFrame:null, title:'New Tab' };
+  tab.view = $('tpl').content.firstElementChild.cloneNode(true);
+  tab.frame = tab.view.querySelector('iframe');
+  tab.el = document.createElement('div'); tab.el.className='tab'; tab.el.setAttribute('role','tab'); tab.el.setAttribute('aria-label','New tab');
+  var symbol=document.createElement('span');symbol.className='tab-symbol';symbol.textContent='✧';
+  tab.label=document.createElement('span');tab.label.className='tab-title';tab.label.textContent='New Tab';
+  var close=document.createElement('button');close.type='button';close.className='tab-close';close.textContent='×';close.title='Close tab';close.setAttribute('aria-label','Close tab');
+  tab.el.append(symbol,tab.label,close);tab.el.addEventListener('click',function(){select(tab);});
+  close.addEventListener('click',function(event){event.stopPropagation();closeTab(tab);});
+  $('tabs').appendChild(tab.el);$('views').appendChild(tab.view);
+  var homeInput=tab.view.querySelector('.hf input');
+  tab.view.querySelector('.hf').addEventListener('submit',function(event){event.preventDefault();go(homeInput.value,tab);});
+  tab.view.querySelector('[data-action="clear-history"]').addEventListener('click',clearHistory);
+  tab.view.querySelector('[data-action="bookmark-info"]').addEventListener('click',function(){say('Open a page, then tap the bookmark icon in the top bar to save it here.');});
+  tab.frame.onload=function(){
+    tab.loading=false;
+    try { var frameUrl=tab.frame.contentWindow.location.href; if(scramjet&&typeof scramjet.decodeUrl==='function'&&frameUrl.indexOf('/~/sj/')!==-1) tab.url=scramjet.decodeUrl(frameUrl); var title=tab.frame.contentDocument.title; if(title)tab.title=title; }
+    catch(error){}
+    tab.label.textContent=tab.url?tab.title||hostOf(tab.url):'New Tab';
+    if(active===tab){$('bq').value=tab.url||'';$('status-left').textContent=tab.url?hostOf(tab.url):'Portal is ready';}
+    updateBookmarkButton();
+  };
+  tabs.push(tab);renderHome(tab);select(tab);homeInput.focus();
+}
+function closeTab(tab) {
+  var index=tabs.indexOf(tab);if(index===-1)return;
+  tabs.splice(index,1);tab.el.remove();tab.view.remove();
+  if(!tabs.length)newTab();else if(active===tab)select(tabs[Math.max(0,index-1)]);
+  $('tab-count').textContent=tabs.length+(tabs.length===1?' TAB':' TABS');
+}
+async function go(value,tab) {
+  tab=tab||active;if(!tab||!value||!String(value).trim())return;
+  var url=toUrl(value);if(!url)return;
+  tab.url=url;tab.title=hostOf(url);tab.label.textContent='Loading…';tab.loading=true;tab.view.classList.add('nav-on');
+  if(active===tab){$('bq').value=url;setProxyStatus('connecting','OPENING PAGE');$('status-left').textContent='Connecting to '+hostOf(url);}
+  try {
+    if(!ready)ready=setup();await ready;
+  } catch(error) {
+    ready=null;console.error('Portal proxy startup failed:',error);setProxyStatus('error','CONNECTION ERROR');say('Portal could not start the proxy: '+(error&&error.message?error.message:error));tab.view.classList.remove('nav-on');tab.loading=false;return;
+  }
+  try {
+    if(!tab.scramFrame)tab.scramFrame=scramjet.createFrame(tab.frame);
+    tab.scramFrame.go(url);saveHistory(url,tab.title);tab.label.textContent=hostOf(url);if(active===tab){setProxyStatus('ready','PROXY READY');$('status-left').textContent=hostOf(url);$('back').disabled=false;}
+    updateBookmarkButton();
+  } catch(error) {console.error('Could not navigate Scramjet frame:',error);say('Could not open that address: '+(error&&error.message?error.message:error));tab.loading=false;}
+}
+function updateBookmarkButton() {
+  var button=$('bookmark-page');var isSaved=!!(active&&active.url&&getBookmarks().some(function(item){return item.url===active.url;}));
+  button.setAttribute('aria-pressed',String(isSaved));button.classList.toggle('active',isSaved);button.title=isSaved?'Remove bookmark':'Bookmark this page';
+}
+function toggleBookmark() {
+  if(!active||!active.url){say('Open a page before bookmarking it.');return;}
+  var list=getBookmarks();var exists=list.some(function(item){return item.url===active.url;});
+  if(exists)list=list.filter(function(item){return item.url!==active.url;});
+  else list.unshift({url:active.url,title:active.title||hostOf(active.url)});
+  writeJSON(KEYS.bookmarks,list.slice(0,30));tabs.forEach(renderHome);updateBookmarkButton();say(exists?'Bookmark removed.':'Saved to your bookmarks.');
+}
+function clearHistory() { writeJSON(KEYS.history,[]);tabs.forEach(renderHome);say('Recent pages cleared.'); }
+function clearBookmarks() { writeJSON(KEYS.bookmarks,[]);tabs.forEach(renderHome);updateBookmarkButton();say('Bookmarks cleared.'); }
+function openSettings(section) {
+  $('settings-backdrop').classList.add('open');$('settings-backdrop').setAttribute('aria-hidden','false');
+  if(section)selectSettings(section);$('settings-close').focus();
+}
+function closeSettings() { $('settings-backdrop').classList.remove('open');$('settings-backdrop').setAttribute('aria-hidden','true');$('settings-btn').focus(); }
+function selectSettings(name) {
+  document.querySelectorAll('[data-settings-tab]').forEach(function(button){button.classList.toggle('active',button.dataset.settingsTab===name);});
+  document.querySelectorAll('[data-settings-section]').forEach(function(section){section.classList.toggle('active',section.dataset.settingsSection===name);});
+}
+async function runDiagnostics() {
+  var output=$('diag-output');output.style.display='block';output.textContent='Checking server and proxy assets…';
+  var results={page:location.origin,build:BUILD_ID,checks:{}};
+  for(var path of ['/healthz','/__portal/diagnostics']) {
+    try { var response=await fetch(path,{cache:'no-store'});var body=await response.json();results.checks[path]={http:response.status,...body}; }
+    catch(error){results.checks[path]={error:error.message};}
+  }
+  output.textContent=JSON.stringify(results,null,2);
+}
+async function repairProxyStorage() {
+  if(!window.confirm('Repair Portal proxy storage? This removes Scramjet-specific local databases. Saved Portal bookmarks and history are kept, but active proxied pages will close.'))return;
+  try { var names=await resetScramjetDatabases(true);say('Proxy storage repaired ('+names.length+' database(s)). Reloading Portal…');setTimeout(function(){location.reload();},900); }
+  catch(error){say('Storage repair could not finish: '+error.message);}
+}
+$('plus').addEventListener('click',newTab);
+$('bf').addEventListener('submit',function(event){event.preventDefault();go($('bq').value);});
+$('clear-address').addEventListener('click',function(){$('bq').value='';$('bq').focus();});
+$('back').addEventListener('click',function(){if(active&&active.scramFrame)try{active.scramFrame.back();}catch(error){console.warn(error);}});
+$('fwd').addEventListener('click',function(){if(active&&active.scramFrame)try{active.scramFrame.forward();}catch(error){console.warn(error);}});
+$('reload').addEventListener('click',function(){if(active&&active.scramFrame)try{active.scramFrame.reload();}catch(error){console.warn(error);}else if(active){active.view.classList.remove('nav-on');}});
+$('home-btn').addEventListener('click',function(){if(!active)return;active.frame.src='about:blank';active.scramFrame=null;active.view.classList.remove('nav-on');active.url='';active.title='New Tab';active.label.textContent='New Tab';$('bq').value='';select(active);});
+$('bookmark-page').addEventListener('click',toggleBookmark);
+$('settings-btn').addEventListener('click',function(){openSettings('general');});
+$('settings-close').addEventListener('click',closeSettings);
+$('settings-backdrop').addEventListener('click',function(event){if(event.target===$('settings-backdrop'))closeSettings();});
+document.querySelectorAll('[data-settings-tab]').forEach(function(button){button.addEventListener('click',function(){selectSettings(button.dataset.settingsTab);});});
+$('theme-select').addEventListener('change',function(){settings.theme=this.value;saveSettings();applySettings();});
+$('motion-toggle').addEventListener('change',function(){settings.animations=this.checked;saveSettings();applySettings();});
+$('history-toggle').addEventListener('change',function(){settings.saveHistory=this.checked;if(!settings.saveHistory)writeJSON(KEYS.history,[]);saveSettings();tabs.forEach(renderHome);});
+$('engine-select').addEventListener('change',function(){settings.searchEngine=this.value;saveSettings();say('Search engine updated.');});
+$('transport-select').addEventListener('change',function(){settings.transport=this.value;saveSettings();$('status-transport').textContent='TRANSPORT · '+settings.transport.toUpperCase();ready=null;say('Transport preference saved. It will apply the next time Portal starts a proxy connection.');});
+$('clear-history-setting').addEventListener('click',clearHistory);
+$('clear-bookmarks-setting').addEventListener('click',clearBookmarks);
+$('forget-data').addEventListener('click',function(){if(!window.confirm('Forget all Portal preferences, bookmarks, and recent pages on this device?'))return;[KEYS.settings,KEYS.bookmarks,KEYS.history].forEach(function(key){localStorage.removeItem(key);});settings=Object.assign({},defaults);saveSettings();applySettings();tabs.forEach(renderHome);updateBookmarkButton();say('Portal data forgotten.');});
+$('run-diagnostics').addEventListener('click',runDiagnostics);
+$('repair-storage').addEventListener('click',repairProxyStorage);
+$('fullscreen-btn').addEventListener('click',function(){if(!document.fullscreenElement&&document.documentElement.requestFullscreen)document.documentElement.requestFullscreen().catch(function(error){say('Fullscreen unavailable: '+error.message);});else if(document.exitFullscreen)document.exitFullscreen();});
+document.addEventListener('keydown',function(event){var key=event.key.toLowerCase();if((event.ctrlKey||event.metaKey)&&key==='l'){event.preventDefault();$('bq').focus();$('bq').select();}else if((event.ctrlKey||event.metaKey)&&key==='t'){event.preventDefault();newTab();}else if((event.ctrlKey||event.metaKey)&&key==='w'){event.preventDefault();if(active)closeTab(active);}else if((event.ctrlKey||event.metaKey)&&key==='r'){event.preventDefault();$('reload').click();}else if(event.key==='Escape'&&$('settings-backdrop').classList.contains('open'))closeSettings();});
+if('serviceWorker' in navigator)navigator.serviceWorker.addEventListener('message',function(event){if(event.data&&event.data.type==='PORTAL_SCRAMJET_ERROR'){console.error('Portal service-worker diagnostics:',event.data.details);setProxyStatus('error','PROXY ERROR');}});
+window.addEventListener('error',function(event){console.error('Portal page error:',event.error||event.message);});
+applySettings();newTab();
+</script>
+</body>
+</html>
